@@ -294,3 +294,4 @@ cython_debug/
 
 *.pyc
 *.idea
+psql_secrets.py
