@@ -24,8 +24,7 @@ class BuscalibreSpider(scrapy.Spider):
 			except:
 				pass
 		
-		if BuscalibreSpider.page_number <= 3:  # total pages: 134
-			# while True:
+		if BuscalibreSpider.page_number <= 151:
 			BuscalibreSpider.page_number += 1
 			next_page = "https://www.buscalibre.cl/libros-envio-express-chile_t.html?page=" + \
 						str(BuscalibreSpider.page_number)
@@ -33,7 +32,6 @@ class BuscalibreSpider(scrapy.Spider):
 			try:
 				yield response.follow(url=next_page, callback=self.parse)
 			except:
-				# break
 				pass
 	
 	def parse_book(self, response):

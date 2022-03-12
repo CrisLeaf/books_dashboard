@@ -12,7 +12,7 @@ def reset_tables():
 		""",
 		"""
 		CREATE TABLE websites (id SERIAL PRIMARY KEY,
-							   name TEXT NOT NULL)
+							   website TEXT NOT NULL)
 		""",
 		"""
 		CREATE TABLE books (id SERIAL PRIMARY KEY,
