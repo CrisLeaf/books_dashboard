@@ -32,10 +32,6 @@ class BooksScrapyPipeline(object):
 			else:
 				website_id = record[0][0]
 			
-			print("\n")
-			print(website_id)
-			print("\n")
-			
 			self.curr.execute(
 				"""
 				INSERT INTO books (name, author, editorial, price, review, description,

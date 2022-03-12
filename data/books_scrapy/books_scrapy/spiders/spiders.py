@@ -24,7 +24,7 @@ class BuscalibreSpider(scrapy.Spider):
 			except:
 				pass
 		
-		if BuscalibreSpider.page_number <= 151:
+		if BuscalibreSpider.page_number <= 151:  # 151
 			BuscalibreSpider.page_number += 1
 			next_page = "https://www.buscalibre.cl/libros-envio-express-chile_t.html?page=" + \
 						str(BuscalibreSpider.page_number)
