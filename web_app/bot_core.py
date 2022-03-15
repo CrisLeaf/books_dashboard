@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
 # from scipy.sparse import csr_matrix
-from get_stop_words import spanish_stop_words
+from .get_stop_words import spanish_stop_words
 
 
 class RecommendationsBot():
@@ -17,7 +17,7 @@ class RecommendationsBot():
 			conn = psycopg2.connect(**self.psql_params)
 			curr = conn.cursor()
 			
-			curr.execute("SELECT name, review, link FROM books WHERE id <= 10000")
+			curr.execute("SELECT name, review, link FROM books WHERE id <= 5000")
 			tuples = curr.fetchall()
 			
 			self.base_df = pd.DataFrame(tuples, columns=["name", "review", "link"])
@@ -59,4 +59,10 @@ class RecommendationsBot():
 		scores = sorted(scores, key=lambda x: x[1], reverse=True)[1:]
 		max_score_index = max(scores, key=lambda x: x[1])
 		
-		return self.base_df["link"].iloc[max_score_index[0]], max_score_index[1]
+		return {
+			"name": self.base_df["name"].iloc[max_score_index[0]],
+			"link": self.base_df["link"].iloc[max_score_index[0]],
+			"score": max_score_index[1],
+		}
+	
+	# return self.base_df["link"].iloc[max_score_index[0]], max_score_index[1]
