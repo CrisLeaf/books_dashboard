@@ -10,8 +10,9 @@
 </head>
 <body>
 <form method="post" action="{{ url_for('application.recommend') }}">
-  <textarea name="text" cols="30" rows="4" placeholder="Ingrese frase"></textarea>
+  <textarea name="review-text" cols="30" rows="4" placeholder="Ingrese review"></textarea>
   <button type="submit">Enviar</button>
+  
 </form>
 <div>{{ recommendation }}</div>
 </body>
