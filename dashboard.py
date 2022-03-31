@@ -601,10 +601,18 @@ elif page == "Multi-Variado":
 											 [y.mean() for i in range(test_df.shape[0])])
 		test_error = mean_squared_error(test_df["bayesian_rating"], y_pred)
 		
-		st.write("Error en los datos de prueba:")
-		st.write(f"Valor medio: {round(mean_test_error, 6)} - Predicción: {round(test_error, 6)}")
+		st.write(f"Error en los datos de prueba: Valor medio: "
+				 f"{round(mean_test_error, 6)} - Predicción: {round(test_error, 6)}")
 		st.write(f"Representa una mejora del {1 - test_error / mean_test_error:.0%}.")
-	
+		
+		fig = px.bar(
+			x=[item for item in lin_reg.coef_],
+			y=[item for item in lin_reg.feature_names_in_],
+			labels={"x": "Importancia", "y": "Parámetro"},
+			title="Importancia de los Parámetros",
+			height=500
+		)
+		st.plotly_chart(fig)
 	
 	elif model == "Regresión Polinomial":
 		X = df[relevant_parameters]
@@ -648,9 +656,18 @@ elif page == "Multi-Variado":
 											 [y.mean() for i in range(test_df.shape[0])])
 		test_error = mean_squared_error(test_df["bayesian_rating"], y_pred)
 		
-		st.write("Error en los datos de prueba:")
-		st.write(f"Valor medio: {round(mean_test_error, 6)} - Predicción: {round(test_error, 6)}")
+		st.write(f"Error en los datos de prueba: Valor medio: "
+				 f"{round(mean_test_error, 6)} - Predicción: {round(test_error, 6)}")
 		st.write(f"Representa una mejora del {1 - test_error / mean_test_error:.0%}.")
+		
+		fig = px.bar(
+			x=[item for item in pol_reg.named_steps["reg"].coef_.flatten()],
+			y=[item for item in pol_reg.named_steps["pol"].get_feature_names_out()],
+			labels={"x": "Importancia", "y": "Parámetro"},
+			title="Importancia de los Parámetros",
+			height=1200
+		)
+		st.plotly_chart(fig)
 	
 	elif model == "LightGBM":
 		X = df[relevant_parameters]
@@ -693,9 +710,19 @@ elif page == "Multi-Variado":
 											 [y.mean() for i in range(test_df.shape[0])])
 		test_error = mean_squared_error(test_df["bayesian_rating"], y_pred)
 		
-		st.write("Error en los datos de prueba:")
-		st.write(f"Valor medio: {round(mean_test_error, 6)} - Predicción: {round(test_error, 6)}")
+		st.write(f"Error en los datos de prueba: Valor medio: "
+				 f"{round(mean_test_error, 6)} - Predicción: {round(test_error, 6)}")
 		st.write(f"Representa una mejora del {1 - test_error / mean_test_error:.0%}.")
+		
+		fig = px.bar(
+			x=[item for item in lgb_reg.feature_importances_],
+			y=[item for item in lgb_reg.feature_name_],
+			labels={"x": "Importancia", "y": "Parámetro"},
+			title="Importancia de los Parámetros",
+			height=500
+		)
+		st.plotly_chart(fig)
+	
 	
 	elif model == "Random Forest":
 		X = df[relevant_parameters]
@@ -738,9 +765,18 @@ elif page == "Multi-Variado":
 											 [y.mean() for i in range(test_df.shape[0])])
 		test_error = mean_squared_error(test_df["bayesian_rating"], y_pred)
 		
-		st.write("Error en los datos de prueba:")
-		st.write(f"Valor medio: {round(mean_test_error, 6)} - Predicción: {round(test_error, 6)}")
+		st.write(f"Error en los datos de prueba: Valor medio: "
+				 f"{round(mean_test_error, 6)} - Predicción: {round(test_error, 6)}")
 		st.write(f"Representa una mejora del {1 - test_error / mean_test_error:.0%}.")
+		
+		fig = px.bar(
+			x=[item for item in ran_for.feature_importances_],
+			y=[item for item in ran_for.feature_names_in_],
+			labels={"x": "Importancia", "y": "Parámetro"},
+			title="Importancia de los Parámetros",
+			height=500
+		)
+		st.plotly_chart(fig)
 
 html_source_code = """
 	<p class="source-code">Código Fuente:
