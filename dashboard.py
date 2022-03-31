@@ -573,7 +573,7 @@ elif page == "Multi-Variado":
 			x=y,
 			y=y_pred,
 			labels={"x": "Valores Reales", "y": "Valores Obtenidos"},
-			title="Predicción de Regresión Lineal"
+			title="Predicción de Regresión Lineal en Datos de Entrenamiento"
 		)
 		fig.add_shape(
 			type="line",
@@ -620,7 +620,7 @@ elif page == "Multi-Variado":
 			x=y,
 			y=y_pred,
 			labels={"x": "Valores Reales", "y": "Valores Obtenidos"},
-			title="Predicción de Regresión Polinomial"
+			title="Predicción de Regresión Polinomial en Datos de Entrenamiento"
 		)
 		fig.add_shape(
 			type="line",
@@ -665,7 +665,7 @@ elif page == "Multi-Variado":
 			x=y,
 			y=y_pred,
 			labels={"x": "Valores Reales", "y": "Valores Obtenidos"},
-			title="Predicción de LightGBM"
+			title="Predicción de LightGBM en Datos de Entrenamiento"
 		)
 		fig.add_shape(
 			type="line",
@@ -710,7 +710,7 @@ elif page == "Multi-Variado":
 			x=y,
 			y=y_pred,
 			labels={"x": "Valores Reales", "y": "Valores Obtenidos"},
-			title="Predicción de Random Forest"
+			title="Predicción de Random Forest en Datos de Entrenamiento"
 		)
 		fig.add_shape(
 			type="line",
