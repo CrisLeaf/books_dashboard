@@ -20,9 +20,27 @@ df["book_pages"].fillna(method="ffill", inplace=True)
 df["review_non_stopwords_rate"].fillna(method="ffill", inplace=True)
 df["review_mean_word_length"].fillna(method="ffill", inplace=True)
 
-st.set_page_config(layout="wide")
-st.header("Análisis Estadístico de Libros")
-st.write("Los datos fueron recolectados de buscalibre.cl.")
+html_header = """
+	<head>
+	<link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+	</head>
+	<a href="https://crisleaf.herokuapp.com/">
+		<i class="fas fa-arrow-left"></i>
+	</a>
+	<h2 style="text-align:center;">Análisis Estadístico de Libros</h2>
+	<style>
+		i {
+			font-size: 30px;
+			color: #222;
+		}
+		i:hover {
+			color: cornflowerblue;
+			transition: color 0.3s ease;
+		}
+	</style>
+"""
+st.markdown(html_header, unsafe_allow_html=True)
+st.write("Los datos fueron recolectados de www.buscalibre.cl.")
 
 page = st.sidebar.selectbox("Seleccione Tipo de Análisis", ["Uni-Variado",
 															"Bi-Variado",
