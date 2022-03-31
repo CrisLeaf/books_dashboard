@@ -389,7 +389,7 @@ elif page == "Bi-Variado":
 			x=[item[1] for item in commons_list[0:10]],
 			y=[item[0] for item in commons_list[0:10]],
 			labels={"x": "Cantidad", "y": "Palabra"},
-			title="Palabras más repetidas en la Editorial de los top 1.000 libros"
+			title="Palabras más repetidas en la Editorial de los top 1.000 Libros"
 		).update_layout(yaxis={"autorange": "reversed"})
 		st.plotly_chart(fig)
 	
@@ -406,7 +406,7 @@ elif page == "Bi-Variado":
 			x=[item[1] for item in commons_list[0:10]],
 			y=[item[0] for item in commons_list[0:10]],
 			labels={"x": "Cantidad", "y": "Categoría"},
-			title="Categorías más repetidas en los top 1.000 libros"
+			title="Categorías más repetidas en los top 1.000 Libros"
 		).update_layout(yaxis={"autorange": "reversed"})
 		st.plotly_chart(fig)
 	
