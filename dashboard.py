@@ -9,11 +9,10 @@ from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestRegressor
 from lightgbm import LGBMRegressor
 from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import cross_val_score
 
 
-df = pd.read_csv("train.csv")
-test_df = pd.read_csv("test.csv")
+df = pd.read_csv("data/train.csv")
+test_df = pd.read_csv("data/test.csv")
 
 df["book_year"].fillna(method="ffill", inplace=True)
 df["book_pages"].fillna(method="ffill", inplace=True)
@@ -740,3 +739,19 @@ elif page == "Multi-Variado":
 		st.write("Error en los datos de prueba:")
 		st.write(f"Valor medio: {round(mean_test_error, 6)} - Predicción: {round(test_error, 6)}")
 		st.write(f"Representa una mejora del {1 - test_error / mean_test_error:.0%}.")
+
+html_source_code = """
+	<p class="source-code">Código Fuente:
+	<a href="https://github.com/CrisLeaf/books_dashboard" target="_blank">
+	<i class="fab fa-github"></i></a></p>
+	<style>
+		.source-code {
+			text-align: right;
+			color: #666;
+		}
+		.fa-github {
+			color: #666;
+		}
+	</style>
+"""
+st.markdown(html_source_code, unsafe_allow_html=True)
