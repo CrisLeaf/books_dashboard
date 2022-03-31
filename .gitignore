@@ -3,7 +3,6 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=intellij,data,jupyternotebooks,python
 
 ### Data ###
-*.csv
 *.dat
 *.efx
 *.gbr
