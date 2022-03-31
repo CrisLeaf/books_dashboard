@@ -39,7 +39,9 @@ html_header = """
 	</style>
 """
 st.markdown(html_header, unsafe_allow_html=True)
-st.write("Los datos fueron recolectados de www.buscalibre.cl.")
+st.write(f"Los datos fueron recolectados de www.buscalibre.cl.")
+st.write(f"La cantidad total son: {df.shape[0]} datos de entrenamiento y {test_df.shape[0]} datos "
+		 f"de prueba.")
 
 page = st.sidebar.selectbox("Seleccione Tipo de Análisis", ["Uni-Variado",
 															"Bi-Variado",
