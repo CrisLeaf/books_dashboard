@@ -9,6 +9,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestRegressor
 from lightgbm import LGBMRegressor
 from sklearn.metrics import mean_squared_error
+from recommendation_bot import RecommendationBot
+from bs4 import BeautifulSoup
+import requests
 
 
 df = pd.read_csv("data/train.csv")
@@ -38,16 +41,19 @@ html_header = """
 		}
 	</style>
 """
-st.markdown(html_header, unsafe_allow_html=True)
-st.write(f"Los datos fueron recolectados de www.buscalibre.cl.")
-st.write(f"La cantidad total son: {df.shape[0]} datos de entrenamiento y {test_df.shape[0]} datos "
-		 f"de prueba.")
 
-page = st.sidebar.selectbox("Seleccione Tipo de Análisis", ["Uni-Variado",
-															"Bi-Variado",
-															"Multi-Variado"])
+page = st.sidebar.selectbox("Seleccione:", ["Análisis: Uni-Variado",
+											"Análisis: Bi-Variado",
+											"Análisis: Multi-Variado",
+											"Recomiéndame un libro"])
 
-if page == "Uni-Variado":
+if page == "Análisis: Uni-Variado":
+	st.markdown(html_header, unsafe_allow_html=True)
+	st.write(f"Los datos fueron recolectados de www.buscalibre.cl.")
+	st.write(
+		f"La cantidad total son: {df.shape[0]} datos de entrenamiento y {test_df.shape[0]} datos "
+		f"de prueba.")
+	
 	parameter_list = ["...", "Nombre", "Género", "Editorial", "Precio", "Formato", "Categoría",
 					  "Año de publicación", "N° de páginas", "Ranking",
 					  "Contra-portada: n° de caracteres",
@@ -295,7 +301,13 @@ if page == "Uni-Variado":
 		).update_layout(yaxis_title="Cantidad")
 		st.plotly_chart(fig)
 
-elif page == "Bi-Variado":
+elif page == "Análisis: Bi-Variado":
+	st.markdown(html_header, unsafe_allow_html=True)
+	st.write(f"Los datos fueron recolectados de www.buscalibre.cl.")
+	st.write(
+		f"La cantidad total son: {df.shape[0]} datos de entrenamiento y {test_df.shape[0]} datos "
+		f"de prueba.")
+	
 	parameter_list = ["...", "Nombre", "Género", "Editorial", "Precio", "Categoría",
 					  "Año de publicación", "N° de páginas",
 					  "Contra-portada: n° de caracteres",
@@ -522,7 +534,13 @@ elif page == "Bi-Variado":
 		).update_layout(yaxis_title="Ranking")
 		st.plotly_chart(fig)
 
-elif page == "Multi-Variado":
+elif page == "Análisis: Multi-Variado":
+	st.markdown(html_header, unsafe_allow_html=True)
+	st.write(f"Los datos fueron recolectados de www.buscalibre.cl.")
+	st.write(
+		f"La cantidad total son: {df.shape[0]} datos de entrenamiento y {test_df.shape[0]} datos "
+		f"de prueba.")
+	
 	model_list = ["...", "Regresión Lineal", "Regresión Polinomial", "LightGBM", "Random Forest"]
 	
 	def match_word_in_string(word, string):
@@ -778,6 +796,61 @@ elif page == "Multi-Variado":
 		)
 		st.plotly_chart(fig)
 
+elif page == "Recomiéndame un libro":
+	html_header = """
+		<head>
+		<link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+		</head>
+		<a href="https://crisleaf.herokuapp.com/">
+			<i class="fas fa-arrow-left"></i>
+		</a>
+		<h2 style="text-align:center;">Bot Recomendador de Libros</h2>
+		<style>
+			i {
+				font-size: 30px;
+				color: #222;
+			}
+			i:hover {
+				color: cornflowerblue;
+				transition: color 0.3s ease;
+			}
+		</style>
+	"""
+	st.markdown(html_header, unsafe_allow_html=True)
+	user_review = st.text_area("Ingrese un texto que lo defina, "
+							   "y el bot le recomendará un libro. Mientras más detalles escriba, "
+							   "más adecuada será la recomendación.",
+							   placeholder="Ingrese texto... "
+										   "(ej: El gato es mi animal favorito)")
+	
+	st.button("Recomendar")
+	
+	if user_review != "":
+		rec_bot = RecommendationBot()
+		
+		recommendation = rec_bot.recommend(user_review)
+		
+		col1, col2 = st.columns(2)
+		
+		url = recommendation["link"]
+		r = requests.get(url)
+		html = r.text
+		soup = BeautifulSoup(html, "lxml")
+		img_link = soup.find_all("meta", {"property": "og:image"})
+		col1.image(img_link[0]["content"])
+		
+		col2.write("Nombre del libro:")
+		col2.write(f"{recommendation['name'].capitalize()}.")
+		col2.write(f"{recommendation['score']:.0%} de similitud.")
+		
+		html_name_link = f"""
+			<a href="{recommendation['link']}" target="_blank">
+			    Visitar Página
+			</a>
+		"""
+		col2.markdown(html_name_link, unsafe_allow_html=True)
+
+#
 html_source_code = """
 	<p class="source-code">Código Fuente:
 	<a href="https://github.com/CrisLeaf/books_dashboard" target="_blank">

@@ -2,7 +2,7 @@ import numpy as np
 import psycopg2
 import pandas as pd
 import spacy
-from web_app.get_stop_words import spanish_stop_words
+from get_stop_words import spanish_stop_words
 import re
 
 
