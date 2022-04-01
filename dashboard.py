@@ -817,11 +817,11 @@ elif page == "Recomiéndame un libro":
 		</style>
 	"""
 	st.markdown(html_header, unsafe_allow_html=True)
-	user_review = st.text_area("Ingrese un texto que lo defina, "
+	user_review = st.text_area("Ingrese cosas que le gustan, "
 							   "y el bot le recomendará un libro. Mientras más detalles escriba, "
 							   "más adecuada será la recomendación.",
 							   placeholder="Ingrese texto... "
-										   "(ej: El gato es mi animal favorito)")
+										   "(ej: Películas de zombies.)")
 	
 	st.button("Recomendar")
 	
@@ -837,11 +837,13 @@ elif page == "Recomiéndame un libro":
 		html = r.text
 		soup = BeautifulSoup(html, "lxml")
 		img_link = soup.find_all("meta", {"property": "og:image"})
+		
 		col1.image(img_link[0]["content"])
 		
-		col2.write("Nombre del libro:")
+		col2.write("Nombre:")
 		col2.write(f"{recommendation['name'].capitalize()}.")
-		col2.write(f"{recommendation['score']:.0%} de similitud.")
+		col2.write("Descripción:")
+		col2.write(f"{recommendation['review'].capitalize()}.")
 		
 		html_name_link = f"""
 			<a href="{recommendation['link']}" target="_blank">
