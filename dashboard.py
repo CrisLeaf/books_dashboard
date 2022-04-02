@@ -820,8 +820,8 @@ elif page == "Recomiéndame un libro":
 	user_review = st.text_area("Ingrese cosas que le gustan, "
 							   "y el bot le recomendará un libro. Mientras más detalles escriba, "
 							   "más adecuada será la recomendación.",
-							   placeholder="Ingrese texto... "
-										   "(ej: Películas de zombies.)")
+							   value="Ingrese texto... "
+									 "(ej: Películas de zombies.)")
 	
 	st.button("Recomendar")
 	
