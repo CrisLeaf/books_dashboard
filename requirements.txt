@@ -9,3 +9,4 @@ scipy==1.7.3
 spacy==3.2.1
 stop_words==2018.7.23
 streamlit==1.1.0
+lxml==4.8.0
