@@ -819,9 +819,7 @@ elif page == "Recomiéndame un libro":
 	st.markdown(html_header, unsafe_allow_html=True)
 	user_review = st.text_area("Ingrese cosas que le gustan, "
 							   "y el bot le recomendará un libro. Mientras más detalles escriba, "
-							   "más adecuada será la recomendación.",
-							   value="Ingrese texto... "
-									 "(ej: Películas de zombies.)")
+							   "más adecuada será la recomendación.")
 	
 	st.button("Recomendar")
 	
