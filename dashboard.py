@@ -917,10 +917,10 @@ elif page == "Predecir Calificaciones":
 		name_count = name_vect.fit_transform(extra_df["name"])
 		name_matrix = linear_kernel(name_count, name_count, dense_output=False)
 		
-		scores = list(enumerate(name_matrix.toarray()[extra_df.shape[0] - 1]))
+		scores = list(enumerate(name_matrix.toarray()[extra_df.shape[0] - 1]))[:-1]
 		
-		scores = sorted(scores, key=lambda x: x[1], reverse=True)[:-1]
-		max_score_index = max(scores, key=lambda x: x[1])
+		scores = sorted(scores, key=lambda x: x[1], reverse=True)
+		max_score_index = scores[np.random.randint(0, 3, 1)[0]]
 		
 		similar_name = extra_df.iloc[max_score_index[0]]["name"]
 		
