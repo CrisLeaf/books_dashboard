@@ -241,7 +241,7 @@ def generate_genres_columns(df):
 	df["male_author"] = df["author"].apply(lambda x: match_name(x, male_names))
 
 if __name__ == "__main__":
-	from web_app.psql_secrets import psql_params
+	from psql_secrets import psql_params
 	import warnings
 	
 	

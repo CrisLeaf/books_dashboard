@@ -9,9 +9,13 @@ from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestRegressor
 from lightgbm import LGBMRegressor
 from sklearn.metrics import mean_squared_error
-from recommendation_bot import RecommendationBot
-from bs4 import BeautifulSoup
-import requests
+# from recommendation_bot import RecommendationBot
+from data.get_stop_words import spanish_stop_words
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import linear_kernel
+# from bs4 import BeautifulSoup
+# import requests
+import re
 
 
 df = pd.read_csv("data/train.csv")
@@ -21,6 +25,39 @@ df["book_year"].fillna(method="ffill", inplace=True)
 df["book_pages"].fillna(method="ffill", inplace=True)
 df["review_non_stopwords_rate"].fillna(method="ffill", inplace=True)
 df["review_mean_word_length"].fillna(method="ffill", inplace=True)
+
+def match_word_in_string(word, string):
+	return 1 if word in string.split() else 0
+
+editorials = ["planeta", "ediciones"]
+categories = ["ficcion", "no-ficcion", "juvenil"]
+
+for editorial in editorials:
+	df["editorial_" + editorial] = df["editorial"].apply(
+		lambda x: match_word_in_string(editorial, x))
+
+for category in categories:
+	df["category_" + category] = df["book_category"].apply(
+		lambda x: match_word_in_string(category, x))
+
+for editorial in editorials:
+	test_df["editorial_" + editorial] = test_df["editorial"].apply(
+		lambda x: match_word_in_string(editorial, x))
+
+for category in categories:
+	test_df["category_" + category] = test_df["book_category"].apply(
+		lambda x: match_word_in_string(category, x))
+
+random_indexes = np.random.randint(0, df.shape[0], 107)
+na_inputs = df["book_pages"].iloc[random_indexes].values
+
+na_indexes = test_df[test_df["book_pages"].isna()].index
+
+for i, index in enumerate(na_indexes):
+	test_df.at[index, "book_pages"] = na_inputs[i]
+
+relevant_parameters = ["price", "book_pages", "editorial_planeta", "editorial_ediciones",
+					   "category_ficcion", "category_no-ficcion", "category_juvenil"]
 
 html_header = """
 	<head>
@@ -45,14 +82,13 @@ html_header = """
 page = st.sidebar.selectbox("Seleccione:", ["Análisis: Uni-Variado",
 											"Análisis: Bi-Variado",
 											"Análisis: Multi-Variado",
-											"Recomiéndame un libro"])
+											"Predecir Calificaciones"])
 
 if page == "Análisis: Uni-Variado":
 	st.markdown(html_header, unsafe_allow_html=True)
-	st.write(f"Los datos fueron recolectados de www.buscalibre.cl.")
-	st.write(
-		f"La cantidad total son: {df.shape[0]} datos de entrenamiento y {test_df.shape[0]} datos "
-		f"de prueba.")
+	st.write(f"Seleccione uno de los parámetros relevantes de los datos, para conocer su "
+			 f"distribución")
+	st.write(f"(Los datos fueron recolectados de www.buscalibre.cl)")
 	
 	parameter_list = ["...", "Nombre", "Género", "Editorial", "Precio", "Formato", "Categoría",
 					  "Año de publicación", "N° de páginas", "Ranking",
@@ -303,10 +339,9 @@ if page == "Análisis: Uni-Variado":
 
 elif page == "Análisis: Bi-Variado":
 	st.markdown(html_header, unsafe_allow_html=True)
-	st.write(f"Los datos fueron recolectados de www.buscalibre.cl.")
-	st.write(
-		f"La cantidad total son: {df.shape[0]} datos de entrenamiento y {test_df.shape[0]} datos "
-		f"de prueba.")
+	st.write("Seleccione uno de los parámetros para ver como se relaciona con las calificaciones "
+			 "(**Ranking**) que dejaron los compradores para cada libro.")
+	st.write(f"(Los datos fueron recolectados de www.buscalibre.cl)")
 	
 	parameter_list = ["...", "Nombre", "Género", "Editorial", "Precio", "Categoría",
 					  "Año de publicación", "N° de páginas",
@@ -536,47 +571,14 @@ elif page == "Análisis: Bi-Variado":
 
 elif page == "Análisis: Multi-Variado":
 	st.markdown(html_header, unsafe_allow_html=True)
-	st.write(f"Los datos fueron recolectados de www.buscalibre.cl.")
-	st.write(
-		f"La cantidad total son: {df.shape[0]} datos de entrenamiento y {test_df.shape[0]} datos "
-		f"de prueba.")
+	st.write("Seleccione un modelo de Machine Learning, para ver la importancia que tiene cada "
+			 "parámetro al momento de dejar una calificación.")
+	st.write(f"Para cada uno, se utilizaron {df.shape[0]} libros en el entrenamiento y"
+			 f" {test_df.shape[0]} en la validación del modelo.")
 	
 	model_list = ["...", "Regresión Lineal", "Regresión Polinomial", "LightGBM", "Random Forest"]
 	
-	def match_word_in_string(word, string):
-		return 1 if word in string.split() else 0
-	
-	editorials = ["planeta", "ediciones"]
-	categories = ["ficcion", "no-ficcion", "juvenil"]
-	
-	for editorial in editorials:
-		df["editorial_" + editorial] = df["editorial"].apply(
-			lambda x: match_word_in_string(editorial, x))
-	
-	for category in categories:
-		df["category_" + category] = df["book_category"].apply(
-			lambda x: match_word_in_string(category, x))
-	
-	for editorial in editorials:
-		test_df["editorial_" + editorial] = test_df["editorial"].apply(
-			lambda x: match_word_in_string(editorial, x))
-	
-	for category in categories:
-		test_df["category_" + category] = test_df["book_category"].apply(
-			lambda x: match_word_in_string(category, x))
-	
-	random_indexes = np.random.randint(0, df.shape[0], 107)
-	na_inputs = df["book_pages"].iloc[random_indexes].values
-	
-	na_indexes = test_df[test_df["book_pages"].isna()].index
-	
-	for i, index in enumerate(na_indexes):
-		test_df.at[index, "book_pages"] = na_inputs[i]
-	
 	model = st.selectbox("Seleccione un modelo:", model_list)
-	
-	relevant_parameters = ["price", "book_pages", "editorial_planeta", "editorial_ediciones",
-						   "category_ficcion", "category_no-ficcion", "category_juvenil"]
 	
 	if model == "Regresión Lineal":
 		X = df[relevant_parameters]
@@ -619,9 +621,15 @@ elif page == "Análisis: Multi-Variado":
 											 [y.mean() for i in range(test_df.shape[0])])
 		test_error = mean_squared_error(test_df["bayesian_rating"], y_pred)
 		
+		st.markdown("""
+			<font color="red">La línea roja representa el valor esperado</font>,
+			<font color="green">la línea verde representa el valor promedio</font> y <font
+			color="blue">los puntos azules el valor obtenido</font>.
+		""", unsafe_allow_html=True)
 		st.write(f"Error en los datos de prueba: Valor medio: "
 				 f"{round(mean_test_error, 6)} - Predicción: {round(test_error, 6)}")
-		st.write(f"Representa una mejora del {1 - test_error / mean_test_error:.0%}.")
+		st.write(f"Representa una mejora del {1 - test_error / mean_test_error:.0%}, "
+				 f"con respecto al valor promedio **en los datos de prueba**.")
 		
 		fig = px.bar(
 			x=[item for item in lin_reg.coef_],
@@ -674,9 +682,15 @@ elif page == "Análisis: Multi-Variado":
 											 [y.mean() for i in range(test_df.shape[0])])
 		test_error = mean_squared_error(test_df["bayesian_rating"], y_pred)
 		
+		st.markdown("""
+			<font color="red">La línea roja representa el valor esperado</font>,
+			<font color="green">la línea verde representa el valor promedio</font> y <font
+			color="blue">los puntos azules el valor obtenido</font>.
+		""", unsafe_allow_html=True)
 		st.write(f"Error en los datos de prueba: Valor medio: "
 				 f"{round(mean_test_error, 6)} - Predicción: {round(test_error, 6)}")
-		st.write(f"Representa una mejora del {1 - test_error / mean_test_error:.0%}.")
+		st.write(f"Representa una mejora del {1 - test_error / mean_test_error:.0%}, "
+				 f"con respecto al valor promedio **en los datos de prueba**.")
 		
 		fig = px.bar(
 			x=[item for item in pol_reg.named_steps["reg"].coef_.flatten()],
@@ -728,9 +742,15 @@ elif page == "Análisis: Multi-Variado":
 											 [y.mean() for i in range(test_df.shape[0])])
 		test_error = mean_squared_error(test_df["bayesian_rating"], y_pred)
 		
+		st.markdown("""
+			<font color="red">La línea roja representa el valor esperado</font>,
+			<font color="green">la línea verde representa el valor promedio</font> y <font
+			color="blue">los puntos azules el valor obtenido</font>.
+		""", unsafe_allow_html=True)
 		st.write(f"Error en los datos de prueba: Valor medio: "
 				 f"{round(mean_test_error, 6)} - Predicción: {round(test_error, 6)}")
-		st.write(f"Representa una mejora del {1 - test_error / mean_test_error:.0%}.")
+		st.write(f"Representa una mejora del {1 - test_error / mean_test_error:.0%}, "
+				 f"con respecto al valor promedio **en los datos de prueba**.")
 		
 		fig = px.bar(
 			x=[item for item in lgb_reg.feature_importances_],
@@ -783,9 +803,15 @@ elif page == "Análisis: Multi-Variado":
 											 [y.mean() for i in range(test_df.shape[0])])
 		test_error = mean_squared_error(test_df["bayesian_rating"], y_pred)
 		
+		st.markdown("""
+			<font color="red">La línea roja representa el valor esperado</font>,
+			<font color="green">la línea verde representa el valor promedio</font> y <font
+			color="blue">los puntos azules el valor obtenido</font>.
+		""", unsafe_allow_html=True)
 		st.write(f"Error en los datos de prueba: Valor medio: "
 				 f"{round(mean_test_error, 6)} - Predicción: {round(test_error, 6)}")
-		st.write(f"Representa una mejora del {1 - test_error / mean_test_error:.0%}.")
+		st.write(f"Representa una mejora del {1 - test_error / mean_test_error:.0%}, "
+				 f"con respecto al valor promedio **en los datos de prueba**.")
 		
 		fig = px.bar(
 			x=[item for item in ran_for.feature_importances_],
@@ -796,59 +822,206 @@ elif page == "Análisis: Multi-Variado":
 		)
 		st.plotly_chart(fig)
 
-elif page == "Recomiéndame un libro":
+elif page == "Predecir Calificaciones":
 	html_header = """
-		<head>
-		<link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-		</head>
-		<a href="https://crisleaf.herokuapp.com/">
-			<i class="fas fa-arrow-left"></i>
-		</a>
-		<h2 style="text-align:center;">Bot Recomendador de Libros</h2>
-		<style>
-			i {
-				font-size: 30px;
-				color: #222;
-			}
-			i:hover {
-				color: cornflowerblue;
-				transition: color 0.3s ease;
-			}
-		</style>
-	"""
-	st.markdown(html_header, unsafe_allow_html=True)
-	user_review = st.text_area("Ingrese cosas que le gustan, "
-							   "y el bot le recomendará un libro. Mientras más detalles escriba, "
-							   "más adecuada será la recomendación.")
-	
-	st.button("Recomendar")
-	
-	if user_review != "":
-		rec_bot = RecommendationBot()
-		
-		recommendation = rec_bot.recommend(user_review)
-		
-		col1, col2 = st.columns(2)
-		
-		url = recommendation["link"]
-		r = requests.get(url)
-		html = r.text
-		soup = BeautifulSoup(html, "lxml")
-		img_link = soup.find_all("meta", {"property": "og:image"})
-		
-		col1.image(img_link[0]["content"])
-		
-		col2.write("Nombre:")
-		col2.write(f"{recommendation['name'].capitalize()}.")
-		col2.write("Descripción:")
-		col2.write(f"{recommendation['review'].capitalize()}.")
-		
-		html_name_link = f"""
-			<a href="{recommendation['link']}" target="_blank">
-			    Visitar Página
+			<head>
+			<link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+			</head>
+			<a href="https://crisleaf.herokuapp.com/">
+				<i class="fas fa-arrow-left"></i>
 			</a>
+			<h2 style="text-align:center;">Predecir Calificaciones</h2>
+			<style>
+				i {
+					font-size: 30px;
+					color: #222;
+				}
+				i:hover {
+					color: cornflowerblue;
+					transition: color 0.3s ease;
+				}
+			</style>
 		"""
-		col2.markdown(html_name_link, unsafe_allow_html=True)
+	st.markdown(html_header, unsafe_allow_html=True)
+	
+	user_name = st.text_input("Ingrese nombre del libro:")
+	user_price = st.number_input("Ingrese precio (en pesos chilenos):", min_value=1000,
+								 max_value=20_000, step=1000)
+	user_pages = st.number_input("Ingrese n° de páginas", min_value=1,
+								 max_value=500, step=10)
+	user_planeta = st.radio("¿Pertenece a la Editorial Planeta?", ["Sí", "No"])
+	user_ficcion = st.radio("¿Entra en la categoría ficción?", ["Sí", "No"])
+	user_juvenil = st.radio("¿Es para jóvenes?", ["Sí", "No"])
+	
+	if user_planeta == "Sí":
+		user_planeta = 1
+	else:
+		user_planeta = 0
+	
+	if user_ficcion == "Sí":
+		user_ficcion = 1
+		user_noficcion = 0
+	else:
+		user_ficcion = 0
+		user_noficcion = 1
+	
+	if user_juvenil == "Sí":
+		user_juvenil = 1
+	else:
+		user_juvenil = 0
+	
+	full_df = pd.concat([df, test_df], axis=0, ignore_index=True)
+	
+	X = full_df[relevant_parameters]
+	y = full_df["bayesian_rating"]
+	
+	lin_reg = LinearRegression()
+	lin_reg.fit(X, y)
+	
+	user_book = pd.DataFrame(data={
+		"price": user_price,
+		"book_pages": user_pages,
+		"editorial_planeta": user_planeta,
+		"editorial_ediciones": 0,
+		"category_ficcion": user_ficcion,
+		"category_no-ficcion": user_noficcion,
+		"cateogry_juvenil": user_juvenil
+	}, index=[0])
+	
+	predict_btn = st.button("Predecir calificación")
+	
+	if predict_btn:
+		y_pred = lin_reg.predict(user_book)[0]
+		
+		full_df["rating_diff"] = full_df["bayesian_rating"].apply(lambda x: abs(y_pred - x))
+		similar = full_df.sort_values(by="rating_diff").iloc[np.random.randint(0, 5, 1)[0]][[
+			"five_stars", "four_stars", "three_stars", "two_stars", "one_star", "link"
+		]]
+		
+		extra_row = {
+			"name": user_name,
+			"five_stars": "0",
+			"four_stars": "0",
+			"three_stars": "0",
+			"two_stars": "0",
+			"one_star": "0",
+			"link": "a"
+		}
+		extra_df = pd.DataFrame(extra_row, index=[0])
+		extra_df = pd.concat([full_df[["name", "five_stars", "four_stars", "three_stars",
+									   "two_stars", "one_star", "link"]],
+							  extra_df],
+							 ignore_index=True)
+		
+		name_vect = CountVectorizer(stop_words=spanish_stop_words)
+		name_count = name_vect.fit_transform(extra_df["name"])
+		name_matrix = linear_kernel(name_count, name_count, dense_output=False)
+		
+		scores = list(enumerate(name_matrix.toarray()[extra_df.shape[0] - 1]))
+		
+		scores = sorted(scores, key=lambda x: x[1], reverse=True)[:-1]
+		max_score_index = max(scores, key=lambda x: x[1])
+		
+		similar_name = extra_df.iloc[max_score_index[0]]["name"]
+		
+		weight1 = 0.2
+		weight2 = 1.8
+		
+		pred_five1 = int(re.search(r"\((.*?)\)", similar["five_stars"]).group(1))
+		pred_five2 = int(re.search(r"\((.*?)\)",
+								   extra_df.iloc[max_score_index[0]]["five_stars"]).group(1))
+		pred_five = int((weight1 * pred_five1 + weight2 * pred_five2) // 2)
+		
+		pred_four1 = int(re.search(r"\((.*?)\)", similar["four_stars"]).group(1))
+		pred_four2 = int(re.search(r"\((.*?)\)",
+								   extra_df.iloc[max_score_index[0]]["four_stars"]).group(1))
+		pred_four = int((weight1 * pred_four1 + weight2 * pred_four2) // 2)
+		
+		pred_three1 = int(re.search(r"\((.*?)\)", similar["three_stars"]).group(1))
+		pred_three2 = int(re.search(r"\((.*?)\)",
+									extra_df.iloc[max_score_index[0]]["three_stars"]).group(1))
+		pred_three = int((weight1 * pred_three1 + weight2 * pred_three2) // 2)
+		
+		pred_two1 = int(re.search(r"\((.*?)\)", similar["two_stars"]).group(1))
+		pred_two2 = int(re.search(r"\((.*?)\)",
+								  extra_df.iloc[max_score_index[0]]["two_stars"]).group(1))
+		pred_two = int((weight1 * pred_two1 + weight2 * pred_two2) // 2)
+		
+		pred_one1 = int(re.search(r"\((.*?)\)", similar["one_star"]).group(1))
+		pred_one2 = int(re.search(r"\((.*?)\)",
+								  extra_df.iloc[max_score_index[0]]["one_star"]).group(1))
+		pred_one = int((weight1 * pred_one1 + weight2 * pred_one2) // 2)
+		
+		pred_total = pred_five + pred_four + pred_three + pred_two + pred_one
+		
+		st.markdown(f":full_moon::full_moon::full_moon::full_moon::full_moon: "
+					f"({pred_five / pred_total:.0%}) {pred_five}",
+					unsafe_allow_html=True)
+		st.markdown(f":full_moon::full_moon::full_moon::new_moon::new_moon: "
+					f"({pred_four / pred_total:.0%}) {pred_four}",
+					unsafe_allow_html=True)
+		st.markdown(f":full_moon::full_moon::new_moon::new_moon::new_moon: "
+					f"({pred_three / pred_total:.0%}) {pred_three}",
+					unsafe_allow_html=True)
+		st.markdown(f":full_moon::new_moon::new_moon::new_moon::new_moon: "
+					f"({pred_two / pred_total:.0%}) {pred_two}",
+					unsafe_allow_html=True)
+		st.markdown(f":new_moon::new_moon::new_moon::new_moon::new_moon: "
+					f"({pred_one / pred_total:.0%}) {pred_one}",
+					unsafe_allow_html=True)
+#
+# elif page == "Recomiéndame un Libro":
+# 	html_header = """
+# 		<head>
+# 		<link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+# 		</head>
+# 		<a href="https://crisleaf.herokuapp.com/">
+# 			<i class="fas fa-arrow-left"></i>
+# 		</a>
+# 		<h2 style="text-align:center;">Bot Recomendador de Libros</h2>
+# 		<style>
+# 			i {
+# 				font-size: 30px;
+# 				color: #222;
+# 			}
+# 			i:hover {
+# 				color: cornflowerblue;
+# 				transition: color 0.3s ease;
+# 			}
+# 		</style>
+# 	"""
+# 	st.markdown(html_header, unsafe_allow_html=True)
+# 	user_review = st.text_input("Ingrese el nombre de su libro favorito, y el bot intentará "
+# 								"recomendarle uno de similares características.")
+#
+# 	st.button("Recomendar")
+#
+# 	if user_review != "":
+# 		rec_bot = RecommendationBot()
+#
+# 		recommendation = rec_bot.recommend(user_review)
+#
+# 		col1, col2 = st.columns(2)
+#
+# 		url = recommendation["link"]
+# 		r = requests.get(url)
+# 		html = r.text
+# 		soup = BeautifulSoup(html, "lxml")
+# 		img_link = soup.find_all("meta", {"property": "og:image"})
+#
+# 		col1.image(img_link[0]["content"])
+#
+# 		col2.write("Nombre:")
+# 		col2.write(f"{recommendation['name'].capitalize()}.")
+# 		col2.write("Descripción:")
+# 		col2.write(f"{recommendation['review'].capitalize()}.")
+#
+# 		html_name_link = f"""
+# 			<a href="{recommendation['link']}" target="_blank">
+# 			    Visitar Página
+# 			</a>
+# 		"""
+# 		col2.markdown(html_name_link, unsafe_allow_html=True)
 
 #
 html_source_code = """
