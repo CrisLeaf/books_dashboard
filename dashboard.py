@@ -920,7 +920,7 @@ elif page == "Predecir Calificaciones":
 		scores = list(enumerate(name_matrix.toarray()[extra_df.shape[0] - 1]))[:-1]
 		
 		scores = sorted(scores, key=lambda x: x[1], reverse=True)
-		max_score_index = scores[np.random.randint(0, 3, 1)[0]]
+		max_score_index = scores[0]
 		
 		similar_name = extra_df.iloc[max_score_index[0]]["name"]
 		
