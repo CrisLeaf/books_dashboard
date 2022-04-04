@@ -9,12 +9,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestRegressor
 from lightgbm import LGBMRegressor
 from sklearn.metrics import mean_squared_error
-# from recommendation_bot import RecommendationBot
 from data.get_stop_words import spanish_stop_words
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import linear_kernel
-# from bs4 import BeautifulSoup
-# import requests
 import re
 
 
