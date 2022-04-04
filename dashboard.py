@@ -702,7 +702,7 @@ elif page == "Análisis: Multi-Variado":
 		X = df[relevant_parameters]
 		y = df["bayesian_rating"]
 		
-		lgb_reg = LGBMRegressor(random_state=1919)
+		lgb_reg = LGBMRegressor(random_state=1919, n_estimators=50)
 		lgb_reg.fit(X, y)
 		
 		y_pred = lgb_reg.predict(X)
